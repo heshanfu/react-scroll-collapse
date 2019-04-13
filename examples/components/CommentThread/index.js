@@ -74,6 +74,7 @@ class CommentThread extends Component {
           text={text}
           deleteThread={deleteThread(childThreads, this.deleteThread)}
           addToThread={addToThread(this.addToThread)}
+          isOpenedInit={false}
         />
         {getNested(childThreads)}
       </div>

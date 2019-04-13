@@ -15,8 +15,8 @@ const createComment = key => ({
 class SimpleCollapser extends Component {
 
   state = {
-    comments: [...Array(5).keys()].map(createComment),
-    commentCount: 5,
+    comments: [...Array(25).keys()].map(createComment),
+    commentCount: 25,
   }
 
   addComment = () => {
@@ -51,7 +51,7 @@ class SimpleCollapser extends Component {
           onClick={expandCollapseAll}
           title={title}
         />
-        {comments.map(comment => <SimpleComment {...comment} />)}
+        {comments.map(comment => <SimpleComment isOpenedInit={false} {...comment} />)}
         <button onClick={this.addComment} type="button">
           Add Comment
         </button>

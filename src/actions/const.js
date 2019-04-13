@@ -20,6 +20,9 @@ export const WATCH_COLLAPSER = 'react-scroll-collapse/WATCH_COLLAPSER';
 /* collapserItem action types */
 export const ADD_ITEM = 'react-scroll-collapse/ADD_ITEM';
 export const REMOVE_ITEM = 'react-scroll-collapse/REMOVE_ITEM';
+export const ADD_TO_EXPAND_QUEUE = 'react-scroll-collapse/ADD_TO_EXPAND_QUEUE';
+export const REMOVE_FROM_EXPAND_QUEUE = 'react-scroll-collapse/REMOVE_FROM_EXPAND_QUEUE';
 export const EXPAND_COLLAPSE = 'react-scroll-collapse/EXPAND_COLLAPSE';
 export const TRANSITION_WAIT = 'react-scroll-collapse/TRANSITION_WAIT';
 export const HEIGHT_READY = 'react-scroll-collapse/HEIGHT_READY';
+export const SET_VISIBLE = 'react-scroll-collapse/SET_VISIBLE';

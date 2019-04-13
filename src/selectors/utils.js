@@ -36,6 +36,13 @@ export const selectFunc = getAttrFunc => innerSelectFunc => (stateId) => {
   return getAttrFunc(state);
 };
 
+export const createObjAttrSelector = (
+  key,
+  objSelector
+) => createSelector(
+  objSelector, selectorFunc => id => (item => selector(item, key))(selectorFunc(id))
+);
+
 /*
   Returns an array of ids (ints) which represent the all the nested children of
   the object represented by that id.

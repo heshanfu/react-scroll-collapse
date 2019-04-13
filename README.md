@@ -279,7 +279,10 @@ Is a ref object as created by React.createRef - you must pass this as the 'ref' 
 
 ##### isOpened : PropTypes.bool
 
-A boolean to pass into the <Collapse> component (also uses isOpened) which controls the expanded state.
+A boolean which controls the expanded state and triggers the open close animation.
+
+##### isOpenedInit: PropTypes.bool
+A boolean - default expanded state.
 
 ##### expandCollapse : PropTypes.func
 

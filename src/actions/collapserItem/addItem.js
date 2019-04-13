@@ -5,7 +5,7 @@ const addItem = (collapserId, item, itemId) => ({
   payload: {
     collapserId,
     item,
-    itemId,
+    itemId
   }
 });
 

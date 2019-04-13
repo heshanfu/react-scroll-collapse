@@ -6,10 +6,17 @@ import { connect } from 'react-redux';
 import forwardRefWrapper from '../../utils/forwardRef';
 import { checkForRef } from '../../utils/errorUtils';
 import { ofNumberTypeOrNothing } from '../../utils/propTypeHelpers';
-import { collapserWrapperActions } from '../../actions';
+import { collapserWrapperActions, itemWrapperActions } from '../../actions';
+
 import selectors from '../../selectors';
 
 const { allChildItemsSelector, areAllItemsExpandedSelector } = selectors.collapser;
+const { itemVisibleSelector, itemQueuedSelector } = selectors.collapserItem;
+
+const mergedActions = {
+  addToExpandQueue: itemWrapperActions.addToExpandQueue,
+  ...collapserWrapperActions,
+};
 
 export const collapserWrapper = (WrappedComponent) => {
 
@@ -53,10 +60,12 @@ export const collapserWrapper = (WrappedComponent) => {
 
     expandCollapseAll = () => {
       const {
+        addToExpandQueue,
         allChildItems,
         areAllItemsExpanded,
         collapserId,
         expandCollapseAll,
+        itemVisible,
         parentScrollerId,
         setOffsetTop,
         watchCollapser,
@@ -78,8 +87,15 @@ export const collapserWrapper = (WrappedComponent) => {
         parentScrollerId,
         collapserId,
       );
+      let delay = 0;
+
       allChildItems.forEach((item) => {
-        expandCollapseAll(item, areAllItemsExpanded, item.id);
+        if (!itemVisible(item.id)) {
+          addToExpandQueue(item.id);
+        }
+        setTimeout(() => expandCollapseAll(item, areAllItemsExpanded, item.id), delay);
+        delay += 200;
+        // expandCollapseAll(item, areAllItemsExpanded, item.id);
       });
     };
 
@@ -117,9 +133,11 @@ export const collapserWrapper = (WrappedComponent) => {
     parentScrollerId: PropTypes.number.isRequired,
 
     /* provided by redux */
+    addToExpandQueue: PropTypes.func.isRequired,
     areAllItemsExpanded: PropTypes.bool.isRequired, // includes item children of nested collapsers
     allChildItems: PropTypes.array.isRequired, // array of collapserItem ids
     expandCollapseAll: PropTypes.func.isRequired,
+    itemVisible: PropTypes.func.isRequired,
     setOffsetTop: PropTypes.func.isRequired,
     watchCollapser: PropTypes.func.isRequired,
     watchInitCollapser: PropTypes.func.isRequired,
@@ -128,11 +146,13 @@ export const collapserWrapper = (WrappedComponent) => {
   const mapStateToProps = (state, ownProps) => ({
     allChildItems: allChildItemsSelector(state)(ownProps.collapserId),
     areAllItemsExpanded: areAllItemsExpandedSelector(state)(ownProps.collapserId),
+    itemVisible: itemVisibleSelector(state),
+    itemQueued: itemQueuedSelector(state)
   });
 
   const CollapserControllerConnect = connect(
     mapStateToProps,
-    collapserWrapperActions,
+    mergedActions,
   )(CollapserController);
 
   return CollapserControllerConnect;

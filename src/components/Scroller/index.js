@@ -46,6 +46,7 @@ class Scroller extends Component {
         style={style}
         ref={(elemArg) => {
           this.elem = elemArg;
+          this.getElem = () => (this.elem ? this.elem : null);
           this.getScrollTop = () => (this.elem ? this.elem.scrollTop : null);
           this.setScrollTop = (val) => {
             if (this.elem && val >= 0) {

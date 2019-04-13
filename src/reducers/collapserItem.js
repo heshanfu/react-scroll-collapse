@@ -5,7 +5,10 @@ import {
   EXPAND_COLLAPSE,
   EXPAND_COLLAPSE_ALL,
   HEIGHT_READY,
-  REMOVE_ITEM
+  REMOVE_ITEM,
+  SET_VISIBLE,
+  ADD_TO_EXPAND_QUEUE,
+  REMOVE_FROM_EXPAND_QUEUE
 } from '../actions/const';
 
 import {
@@ -16,7 +19,33 @@ import {
 
 import selectors from '../selectors';
 
-const { getItemId, getItemExpanded } = selectors.collapserItem;
+const {
+  getItemId,
+  getItemExpanded,
+  getItemVisible,
+} = selectors.collapserItem;
+
+export const queuedReducer = (state = false, action) => {
+  // const item = checkAttr(action, 'payload');
+  switch (action.type) {
+    case REMOVE_FROM_EXPAND_QUEUE:
+      return false;
+    case ADD_TO_EXPAND_QUEUE:
+      return true;
+    default:
+      return state;
+  }
+};
+
+export const visibleReducer = (state = false, action) => {
+  const item = checkAttr(action, 'payload');
+  switch (action.type) {
+    case SET_VISIBLE:
+      return getItemVisible(item);
+    default:
+      return state;
+  }
+};
 
 export const expandedReducer = (state = true, action) => {
   const { areAllItemsExpanded, item } = checkAttr(action, 'payload');
@@ -27,8 +56,12 @@ export const expandedReducer = (state = true, action) => {
     }
     case EXPAND_COLLAPSE:
       return !state;
-    case EXPAND_COLLAPSE_ALL:
-      return !areAllItemsExpanded;
+    case EXPAND_COLLAPSE_ALL: {
+      if (getItemVisible(item)) {
+        return !areAllItemsExpanded;
+      }
+      return state;
+    }
     default:
       return state;
   }
@@ -71,6 +104,8 @@ export const waitingForHeightReducer = (state = false, action) => {
 const itemReducer = combineReducers({
   expanded: expandedReducer,
   id: itemIdReducer,
+  queued: queuedReducer,
+  visible: visibleReducer,
   waitingForHeight: waitingForHeightReducer,
 });
 
@@ -84,6 +119,9 @@ export const itemsReducer = (state = {}, action) => {
     case HEIGHT_READY:
     case EXPAND_COLLAPSE:
     case EXPAND_COLLAPSE_ALL:
+    case SET_VISIBLE:
+    case ADD_TO_EXPAND_QUEUE:
+    case REMOVE_FROM_EXPAND_QUEUE:
       return addToState(state, action, itemId, itemReducer);
     default:
       return state;

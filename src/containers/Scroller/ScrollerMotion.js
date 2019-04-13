@@ -6,6 +6,8 @@ import { Motion, spring } from 'react-motion';
 import Scroller from '../../components/Scroller';
 
 import { ofFuncTypeOrNothing, ofNumberTypeOrNothing } from '../../utils/propTypeHelpers';
+import { observerManager } from '../../utils/DOMutils';
+
 import actions from '../../actions';
 import selectors from '../../selectors';
 
@@ -36,8 +38,14 @@ const scrollerMotionWrapper = (ScrollerComponent) => {
     /*
       Initiate a saga to watch this Scroller for ExpandCollapse/All actions.
     */
+
     componentDidMount() {
       const { scrollerId, watchInitialise } = this.props;
+      this.observer = observerManager.initObserver(
+        scrollerId,
+        { root: this.child.getElem() },
+        this.handleIntersecting(this)
+      );
       watchInitialise(scrollerId, this.child.getScrollTop);
     }
 
@@ -94,6 +102,19 @@ const scrollerMotionWrapper = (ScrollerComponent) => {
       }
       offsetScrollTo = offsetScrollTo === undefined || null ? 0 : offsetScrollTo;
       return offsetTop + offsetScrollTo;
+    }
+
+    handleIntersecting = that => (entries) => {
+      entries.forEach(({ target, isIntersecting }) => {
+        const itemId = target.dataset.itemId;
+        const { collapserItems } = that.observer;
+
+        const item = collapserItems[itemId];
+        console.log('item ', item);
+        if (item && typeof item.setVisible === 'function') {
+          item.setVisible(isIntersecting);
+        }
+      });
     }
 
 

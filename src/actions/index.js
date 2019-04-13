@@ -18,14 +18,19 @@ import watchCollapser from './collapser/watchCollapser';
 import watchInitCollapser from './collapser/watchInitCollapser';
 
 /* collapserItem actions */
-import heightReady from './collapserItem/heightReady';
-import expandCollapse from './collapserItem/expandCollapse';
-import removeItem from './collapserItem/removeItem';
 import addItem from './collapserItem/addItem';
+import addToExpandQueue from './collapserItem/addToExpandQueue';
+import removeFromExpandQueue from './collapserItem/removeFromExpandQueue';
+import expandCollapse from './collapserItem/expandCollapse';
+import heightReady from './collapserItem/heightReady';
+import removeItem from './collapserItem/removeItem';
+import setVisible from './collapserItem/setVisible';
 
 const actions = {
   addCollapser,
   addCollapserChild,
+  addToExpandQueue,
+  removeFromExpandQueue,
   removeCollapser,
   removeCollapserChild,
   expandCollapseAll,
@@ -43,6 +48,7 @@ const actions = {
   setOffsetTop,
   watchInitialise,
   scrollTo,
+  setVisible
 };
 
 export const collapserControllerActions = {
@@ -68,9 +74,12 @@ export const itemControllerActions = {
 
 
 export const itemWrapperActions = {
+  addToExpandQueue,
+  removeFromExpandQueue,
   heightReady,
   expandCollapse,
   setOffsetTop,
+  setVisible,
   watchCollapser,
 };
 

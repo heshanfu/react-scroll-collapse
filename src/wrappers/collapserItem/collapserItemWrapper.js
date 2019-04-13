@@ -5,11 +5,12 @@ import { connect } from 'react-redux';
 
 import forwardRefWrapper from '../../utils/forwardRef';
 import { checkForRef } from '../../utils/errorUtils';
+import { observerManager } from '../../utils/DOMutils';
 
 import { itemWrapperActions } from '../../actions';
 import selectors from '../../selectors';
 
-const { itemExpandedSelector } = selectors.collapserItem;
+const { itemExpandedSelector, itemVisibleSelector, itemQueuedSelector } = selectors.collapserItem;
 
 
 /*
@@ -24,6 +25,7 @@ const { itemExpandedSelector } = selectors.collapserItem;
       change of state.
 */
 
+
 export const collapserItemWrapper = (WrappedComponent) => {
 
   const WrappedComponentRef = forwardRefWrapper(WrappedComponent, 'collapserItemRef');
@@ -33,7 +35,47 @@ export const collapserItemWrapper = (WrappedComponent) => {
     elem = React.createRef();
 
     componentDidMount() {
+      const { itemId } = this.props;
       checkForRef(WrappedComponent, this.elem, 'collapserItemRef');
+      // console.log('itemWrapper observer', observerManager);
+      const observerList = observerManager.getObserverList();
+      console.log('itemId: observerList', itemId, observerList);
+      this.elem.current.dataset.itemId = itemId;
+      setTimeout(this.setObserver, 500);
+      // this.observer = createObserver(this.elem.current, this.setVisible);
+    }
+
+    componentWillUnmount() {
+      this.observer.observer.unobserve(this.elem.current);
+    }
+
+    setObserver = () => {
+      const { parentScrollerId, itemId } = this.props;
+      this.observer = observerManager.getObserver(parentScrollerId);
+      this.observer.collapserItems[itemId] = {
+        setVisible: this.setVisible
+      };
+      this.observer.observer.observe(this.elem.current);
+    }
+
+    setVisible = (isIntersecting) => {
+      const {
+        itemId,
+        setVisible: setVisibileAction,
+        queued,
+        removeFromExpandQueue
+      } = this.props;
+      console.log('itemId, isVisible', itemId, isIntersecting);
+      // setTimeout(() => setVisibileAction(isIntersecting, itemId), 100);
+      setVisibileAction(isIntersecting, itemId);
+      if (queued && isIntersecting) {
+        setTimeout(() => {
+          this.expandCollapse(false);
+          removeFromExpandQueue(itemId);
+        }, 0);
+        // this.expandCollapse();
+        // removeFromExpandQueue(itemId);
+      }
     }
 
     /*
@@ -43,21 +85,24 @@ export const collapserItemWrapper = (WrappedComponent) => {
         offsetTop val once the onHeightReady callback has been
         called for every wrapped <Collapse> element in the Collapser.
     */
-    expandCollapse = () => {
+    expandCollapse = (scroll = true) => {
       const {
         itemId,
         expandCollapse: expandCollapseAction,
         parentScrollerId,
         parentCollapserId,
         setOffsetTop,
+        // setVisible,
         watchCollapser,
       } = this.props;
       watchCollapser(parentCollapserId);
-      setOffsetTop(
-        () => this.elem.current.offsetTop,
-        parentScrollerId,
-        parentCollapserId,
-      );
+      if (scroll) {
+        setOffsetTop(
+          () => this.elem.current.offsetTop,
+          parentScrollerId,
+          parentCollapserId,
+        );
+      }
       expandCollapseAction(itemId);
     };
 
@@ -88,19 +133,31 @@ export const collapserItemWrapper = (WrappedComponent) => {
     }
   }
 
+  CollapserItemController.defaultProps = {
+    expandWhenVisible: true,
+  };
+
   CollapserItemController.propTypes = {
+    addToExpandQueue: PropTypes.func.isRequired,
+    removeFromExpandQueue: PropTypes.func.isRequired,
+    expandWhenVisible: PropTypes.bool,
     isOpened: PropTypes.bool.isRequired,
     itemId: PropTypes.number.isRequired,
     parentCollapserId: PropTypes.number.isRequired,
     parentScrollerId: PropTypes.number.isRequired,
     heightReady: PropTypes.func.isRequired,
     expandCollapse: PropTypes.func.isRequired,
+    queued: PropTypes.bool.isRequired,
     setOffsetTop: PropTypes.func.isRequired,
+    setVisible: PropTypes.func.isRequired,
+    // visible: PropTypes.bool.isRequired,
     watchCollapser: PropTypes.func.isRequired,
   };
 
   const mapStateToProps = (state, ownProps) => ({
     isOpened: itemExpandedSelector(state)(ownProps.itemId),
+    queued: itemQueuedSelector(state)(ownProps.itemId),
+    // visible: itemVisibleSelector(state)(ownProps.itemId)
   });
 
   const CollapserItemControllerConnect = connect(
